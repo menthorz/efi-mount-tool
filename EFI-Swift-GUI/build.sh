@@ -22,16 +22,41 @@ if [[ ! -f "Package.swift" ]]; then
     exit 1
 fi
 
-echo -e "${YELLOW}🔨 Compilando projeto Swift...${NC}"
+echo -e "${YELLOW}🔨 Compilando projeto Swift para múltiplas arquiteturas...${NC}"
 
-# Compilar o projeto
-if swift build; then
-    echo ""
-    echo -e "${GREEN}✅ Compilação concluída com sucesso!${NC}"
+# Verificar arquiteturas disponíveis
+echo -e "${CYAN}🔍 Detectando arquiteturas disponíveis...${NC}"
+
+# Compilar para ARM64 (Apple Silicon)
+echo -e "${BLUE}📱 Compilando para ARM64 (Apple Silicon)...${NC}"
+if swift build --arch arm64 -c release; then
+    echo -e "${GREEN}✅ ARM64 compilado com sucesso!${NC}"
+    ARM64_BINARY=".build/arm64-apple-macosx/release/EFI-Swift-GUI"
 else
-    echo ""
-    echo -e "${RED}❌ Erro na compilação!${NC}"
-    exit 1
+    echo -e "${YELLOW}⚠️ Falha na compilação ARM64 (normal em alguns ambientes)${NC}"
+    ARM64_BINARY=""
+fi
+
+# Compilar para x86_64 (Intel)
+echo -e "${BLUE}💻 Compilando para x86_64 (Intel)...${NC}"
+if swift build --arch x86_64 -c release; then
+    echo -e "${GREEN}✅ x86_64 compilado com sucesso!${NC}"
+    X86_BINARY=".build/x86_64-apple-macosx/release/EFI-Swift-GUI"
+else
+    echo -e "${YELLOW}⚠️ Falha na compilação x86_64 (normal em alguns ambientes)${NC}"
+    X86_BINARY=""
+fi
+
+# Fallback para compilação padrão se as específicas falharem
+if [[ -z "$ARM64_BINARY" && -z "$X86_BINARY" ]]; then
+    echo -e "${CYAN}🔄 Tentando compilação padrão...${NC}"
+    if swift build -c release; then
+        DEFAULT_BINARY=".build/release/EFI-Swift-GUI"
+        echo -e "${GREEN}✅ Compilação padrão concluída!${NC}"
+    else
+        echo -e "${RED}❌ Erro na compilação!${NC}"
+        exit 1
+    fi
 fi
 
 echo ""
@@ -43,15 +68,48 @@ APP_DIR="$APP_NAME/Contents"
 rm -rf "$APP_NAME"
 mkdir -p "$APP_DIR"/{MacOS,Resources}
 
-# Copiar executável
-if [[ -f ".build/debug/EFI-Swift-GUI" ]]; then
-    cp ".build/debug/EFI-Swift-GUI" "$APP_DIR/MacOS/EFI-Swift-GUI"
-    chmod +x "$APP_DIR/MacOS/EFI-Swift-GUI"
-    echo -e "${GREEN}✅ Executável copiado${NC}"
+# Criar binário universal se possível
+FINAL_BINARY="$APP_DIR/MacOS/EFI-Swift-GUI"
+
+if [[ -n "$ARM64_BINARY" && -n "$X86_BINARY" ]]; then
+    echo -e "${CYAN}🔀 Criando binário universal (ARM64 + x86_64)...${NC}"
+    lipo -create "$ARM64_BINARY" "$X86_BINARY" -output "$FINAL_BINARY"
+    chmod +x "$FINAL_BINARY"
+    echo -e "${GREEN}✅ Binário universal criado!${NC}"
+    ARCH_INFO="Universal (ARM64 + x86_64)"
+elif [[ -n "$ARM64_BINARY" ]]; then
+    echo -e "${CYAN}📱 Usando binário ARM64...${NC}"
+    cp "$ARM64_BINARY" "$FINAL_BINARY"
+    chmod +x "$FINAL_BINARY"
+    echo -e "${GREEN}✅ Binário ARM64 copiado${NC}"
+    ARCH_INFO="ARM64 (Apple Silicon)"
+elif [[ -n "$X86_BINARY" ]]; then
+    echo -e "${CYAN}💻 Usando binário x86_64...${NC}"
+    cp "$X86_BINARY" "$FINAL_BINARY"
+    chmod +x "$FINAL_BINARY"
+    echo -e "${GREEN}✅ Binário x86_64 copiado${NC}"
+    ARCH_INFO="x86_64 (Intel)"
+elif [[ -n "$DEFAULT_BINARY" ]]; then
+    echo -e "${CYAN}🔧 Usando binário padrão...${NC}"
+    cp "$DEFAULT_BINARY" "$FINAL_BINARY"
+    chmod +x "$FINAL_BINARY"
+    echo -e "${GREEN}✅ Binário padrão copiado${NC}"
+    # Detectar arquitetura do binário padrão
+    if file "$FINAL_BINARY" | grep -q "arm64"; then
+        ARCH_INFO="ARM64 (Apple Silicon)"
+    elif file "$FINAL_BINARY" | grep -q "x86_64"; then
+        ARCH_INFO="x86_64 (Intel)"
+    else
+        ARCH_INFO="Arquitetura detectada automaticamente"
+    fi
 else
-    echo -e "${RED}❌ Executável não encontrado!${NC}"
+    echo -e "${RED}❌ Nenhum executável encontrado!${NC}"
     exit 1
 fi
+
+# Verificar arquiteturas do binário final
+echo -e "${CYAN}🔍 Verificando arquiteturas do binário final...${NC}"
+file "$FINAL_BINARY"
 
 # Copiar shell script para o bundle
 cp "../efi_mount.sh" "$APP_DIR/Resources/"
@@ -110,11 +168,13 @@ echo -e "${BLUE}╠════════════════════�
 echo -e "${BLUE}║${NC} ${CYAN}App Bundle:${NC} $APP_NAME"
 echo -e "${BLUE}║${NC} ${CYAN}Tamanho Total:${NC} $app_size"
 echo -e "${BLUE}║${NC} ${CYAN}Executável:${NC} $executable_size"
+echo -e "${BLUE}║${NC} ${CYAN}Arquitetura:${NC} $ARCH_INFO"
 echo -e "${BLUE}║${NC} ${CYAN}Plataforma:${NC} macOS 13.0+"
 echo -e "${BLUE}║${NC}"
 echo -e "${BLUE}║${NC} ${WHITE}Componentes incluídos:${NC}"
 echo -e "${BLUE}║${NC}   • Interface Swift nativa"
 echo -e "${BLUE}║${NC}   • Shell script integrado"
+echo -e "${BLUE}║${NC}   • Suporte múltiplas arquiteturas"
 echo -e "${BLUE}║${NC}   • Funcionalidades completas"
 echo -e "${BLUE}╚══════════════════════════════════════════════════════════════╝${NC}"
 echo ""
