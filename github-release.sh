@@ -6,8 +6,8 @@
 set -e
 
 PROJECT_NAME="EFI Mount Tool"
-VERSION="v1.0.3"
-RELEASE_ZIP="EFI-Mount-Tool-v1.0.3-Universal.zip"
+VERSION="v1.1.0"
+RELEASE_ZIP="EFI-Mount-Tool-v1.1.0-Universal.zip"
 REPO_URL="https://github.com/menthorz/efi-mount-tool"
 
 echo "🚀 GitHub Release Preparation Script"
