@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var efiService = EFIService()
+    @EnvironmentObject private var efiService: EFIService
     @State private var selectedPartition: EFIPartition?
     @State private var showingSystemInfo = false
     @State private var showingHelp = false
@@ -247,5 +247,6 @@ struct PartitionRowView: View {
 
 #Preview {
     ContentView()
+        .environmentObject(EFIService())
         .frame(width: 1000, height: 700)
 }
