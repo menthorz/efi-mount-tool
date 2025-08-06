@@ -345,14 +345,43 @@ class EFIService: ObservableObject {
     
     // MARK: - Atualizar Informações do Sistema
     func updateSystemInfo() async {
+        isLoading = true
+        lastMessage = "Atualizando informações do sistema..."
+        
         let result = await executeScript(operation: .systemInfo)
+        var diskCount = 0
+        
         switch result {
-        case .success(_):
-            // Parse do output para atualizar systemInfo
-            systemInfo = SystemInfo.current()
-            lastMessage = "Informações do sistema atualizadas"
+        case .success(let output):
+            // Parse do output para contar discos
+            let lines = output.components(separatedBy: .newlines)
+            for line in lines {
+                if line.contains("/dev/disk") && !line.contains("s") { // Conta apenas discos principais, não partições
+                    diskCount += 1
+                }
+            }
+            
+            // Criar novo SystemInfo com informações atualizadas
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
+            
+            systemInfo = SystemInfo(
+                date: formatter.string(from: Date()),
+                user: systemInfo.user,
+                system: systemInfo.system,
+                kernel: systemInfo.kernel,
+                architecture: systemInfo.architecture,
+                totalDisks: diskCount,
+                machineModel: systemInfo.machineModel,
+                cpuBrand: systemInfo.cpuBrand,
+                memorySize: systemInfo.memorySize
+            )
+            
+            lastMessage = "Informações do sistema atualizadas - \(diskCount) disco(s) detectado(s)"
         case .failure(let error):
             lastMessage = "Erro ao obter informações: \(error)"
         }
+        
+        isLoading = false
     }
 }
