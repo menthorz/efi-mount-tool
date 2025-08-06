@@ -48,7 +48,7 @@ enum EFIOperationResult {
 
 enum EFIOperation {
     case discover
-    case mount(Int)
-    case unmount(Int)
+    case mount(String)  // Agora aceita o path do dispositivo
+    case unmount(String)  // Agora aceita o path do dispositivo
     case systemInfo
 }

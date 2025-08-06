@@ -11,9 +11,9 @@
     <key>CFBundleDisplayName</key>
     <string>EFI Swift GUI</string>
     <key>CFBundleVersion</key>
-    <string>1.0</string>
+    <string>1.0.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.0</string>
+    <string>1.0.1</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSignature</key>
@@ -29,5 +29,18 @@
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
+    <key>NSAppleEventsUsageDescription</key>
+    <string>This app needs to execute administrative commands to mount/unmount EFI partitions.</string>
+    <key>NSPrivacyAccessibilityUsageDescription</key>
+    <string>This app needs accessibility access to manage EFI partitions with administrator privileges.</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>EFI Partition</string>
+            <key>CFBundleTypeRole</key>
+            <string>Editor</string>
+        </dict>
+    </array>
 </dict>
 </plist>
