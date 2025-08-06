@@ -116,6 +116,12 @@ cp "../efi_mount.sh" "$APP_DIR/Resources/"
 chmod +x "$APP_DIR/Resources/efi_mount.sh"
 echo -e "${GREEN}✅ Shell script incluído${NC}"
 
+# Copiar ícone personalizado se existir
+if [[ -f "AppIcon.icns" ]]; then
+    cp "AppIcon.icns" "$APP_DIR/Resources/"
+    echo -e "${GREEN}✅ Ícone personalizado incluído${NC}"
+fi
+
 # Criar Info.plist
 cat > "$APP_DIR/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -131,11 +137,13 @@ cat > "$APP_DIR/Info.plist" << 'EOF'
     <key>CFBundleDisplayName</key>
     <string>EFI Swift GUI</string>
     <key>CFBundleVersion</key>
-    <string>1.1.0</string>
+    <string>1.1.1</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.1.0</string>
+    <string>1.1.1</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleSignature</key>
     <string>????</string>
     <key>LSMinimumSystemVersion</key>
