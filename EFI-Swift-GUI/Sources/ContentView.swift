@@ -48,7 +48,7 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showingSystemInfo) {
-            SystemInfoView(systemInfo: efiService.systemInfo)
+            SystemInfoView(systemInfo: efiService.systemInfo, efiService: efiService)
         }
         .sheet(isPresented: $showingHelp) {
             HelpView()

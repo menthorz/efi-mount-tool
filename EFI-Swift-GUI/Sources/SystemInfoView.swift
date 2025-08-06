@@ -3,6 +3,7 @@ import SwiftUI
 struct SystemInfoView: View {
     let systemInfo: SystemInfo
     @Environment(\.dismiss) private var dismiss
+    @ObservedObject var efiService: EFIService
     
     var body: some View {
         VStack(spacing: 0) {
@@ -24,6 +25,14 @@ struct SystemInfoView: View {
                 
                 Spacer()
                 
+                Button("Atualizar") {
+                    Task {
+                        await efiService.updateSystemInfo()
+                    }
+                }
+                .help("Atualizar informações do sistema")
+                .disabled(efiService.isLoading)
+                
                 Button("Fechar") {
                     dismiss()
                 }
@@ -36,25 +45,38 @@ struct SystemInfoView: View {
             
             ScrollView {
                 VStack(spacing: 20) {
-                    // Sistema
-                    SystemInfoSection(title: "Sistema") {
-                        SystemInfoRow(label: "Sistema Operacional", value: systemInfo.system)
-                        SystemInfoRow(label: "Arquitetura", value: systemInfo.architecture)
-                        SystemInfoRow(label: "Kernel", value: systemInfo.kernel)
+                    // Mostrar indicador de carregamento se estiver atualizando
+                    if efiService.isLoading {
+                        HStack {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                            Text("Atualizando informações do sistema...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
                     }
                     
-                    // Usuário
-                    SystemInfoSection(title: "Usuário") {
-                        SystemInfoRow(label: "Nome do Usuário", value: systemInfo.user)
-                        SystemInfoRow(label: "Diretório Home", value: NSHomeDirectory())
-                        SystemInfoRow(label: "Data/Hora", value: systemInfo.date)
+                    // Sistema
+                    SystemInfoSection(title: "Sistema") {
+                        SystemInfoRow(label: "Sistema Operacional", value: efiService.systemInfo.system)
+                        SystemInfoRow(label: "Arquitetura", value: efiService.systemInfo.architecture)
+                        SystemInfoRow(label: "Kernel", value: efiService.systemInfo.kernel)
+                        SystemInfoRow(label: "Modelo da Máquina", value: efiService.systemInfo.machineModel)
                     }
                     
                     // Hardware
                     SystemInfoSection(title: "Hardware") {
-                        SystemInfoRow(label: "Processador", value: getProcessorInfo())
-                        SystemInfoRow(label: "Memória", value: getMemoryInfo())
-                        SystemInfoRow(label: "Discos Conectados", value: "\(systemInfo.totalDisks) dispositivos")
+                        SystemInfoRow(label: "Processador", value: efiService.systemInfo.cpuBrand)
+                        SystemInfoRow(label: "Memória", value: efiService.systemInfo.memorySize)
+                        SystemInfoRow(label: "Discos Conectados", value: "\(efiService.systemInfo.totalDisks) dispositivo(s)")
+                    }
+                    
+                    // Usuário
+                    SystemInfoSection(title: "Usuário") {
+                        SystemInfoRow(label: "Nome do Usuário", value: efiService.systemInfo.user)
+                        SystemInfoRow(label: "Diretório Home", value: NSHomeDirectory())
+                        SystemInfoRow(label: "Data/Hora", value: efiService.systemInfo.date)
                     }
                     
                     // Comandos úteis
@@ -71,18 +93,6 @@ struct SystemInfoView: View {
         }
         .frame(width: 580, height: 480)
         .background(Color(NSColor.windowBackgroundColor))
-    }
-    
-    private func getProcessorInfo() -> String {
-        return ProcessInfo.processInfo.processorCount > 1 
-            ? "\(ProcessInfo.processInfo.processorCount) cores"
-            : "Single core"
-    }
-    
-    private func getMemoryInfo() -> String {
-        let memory = ProcessInfo.processInfo.physicalMemory
-        let gb = Double(memory) / 1_073_741_824 // Convert to GB
-        return String(format: "%.1f GB", gb)
     }
 }
 
@@ -172,5 +182,5 @@ struct CommandRow: View {
 }
 
 #Preview {
-    SystemInfoView(systemInfo: SystemInfo.current())
+    SystemInfoView(systemInfo: SystemInfo.current(), efiService: EFIService())
 }
