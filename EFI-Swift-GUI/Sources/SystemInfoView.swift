@@ -18,7 +18,7 @@ struct SystemInfoView: View {
                         .font(.headline)
                         .fontWeight(.semibold)
                     
-                    Text("EFI Mount Tool")
+                    Text("EFI Mount Tool v\(AppConstants.version)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

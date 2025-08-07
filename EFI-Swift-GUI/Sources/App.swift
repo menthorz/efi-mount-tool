@@ -1,6 +1,13 @@
 import SwiftUI
 import UserNotifications
 
+// MARK: - App Configuration
+struct AppConstants {
+    static let version = "1.2.1"
+    static let appName = "EFI Mount Tool"
+    static let bundleIdentifier = "com.menthorz.efi-mount-tool"
+}
+
 // Singleton para manter a referência do MenuBarManager
 class AppDelegate: NSObject, NSApplicationDelegate {
     var menuBarManager: MenuBarManager?
