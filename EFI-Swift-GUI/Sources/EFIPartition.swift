@@ -5,15 +5,17 @@ struct EFIPartition: Identifiable {
     let deviceName: String
     let devicePath: String
     let size: String
+    let diskName: String // Nome do disco/fabricante (ex: "Samsung SSD 980 PRO", "APPLE SSD AP0256M")
     var mountPoint: String
     var isMounted: Bool {
-        mountPoint != "Não montada" && !mountPoint.isEmpty
+        mountPoint != "Not mounted" && !mountPoint.isEmpty
     }
     
-    init(deviceName: String, devicePath: String, size: String, mountPoint: String) {
+    init(deviceName: String, devicePath: String, size: String, diskName: String, mountPoint: String) {
         self.deviceName = deviceName
         self.devicePath = devicePath
         self.size = size
+        self.diskName = diskName
         self.mountPoint = mountPoint
     }
 }

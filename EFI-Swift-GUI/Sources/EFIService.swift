@@ -183,10 +183,19 @@ class EFIService: ObservableObject {
                 if echo "$info" | grep -qi "EFI\\|GUID_partition_scheme"; then
                     size=$(echo "$info" | grep "Disk Size" | awk -F: '{print $2}' | xargs)
                     mount=$(echo "$info" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
+                    # Get disk name/model from parent disk
+                    parent_disk=$(echo "$disk" | sed 's/s[0-9]*$//')
+                    disk_name=$(diskutil info "$parent_disk" 2>/dev/null | grep "Device / Media Name" | awk -F: '{print $2}' | xargs)
+                    if [ -z "$disk_name" ]; then
+                        disk_name=$(diskutil info "$parent_disk" 2>/dev/null | grep "Media Name" | awk -F: '{print $2}' | xargs)
+                    fi
+                    if [ -z "$disk_name" ]; then
+                        disk_name="Unknown Disk"
+                    fi
                     if [ -z "$mount" ] || [ "$mount" = "Not applicable" ]; then
                         mount="Not mounted"
                     fi
-                    echo "$disk|$size|$mount"
+                    echo "$disk|$size|$mount|$disk_name"
                 fi
             done
             
@@ -198,10 +207,19 @@ class EFIService: ObservableObject {
                     if echo "$info" | grep -qi "EFI"; then
                         size=$(echo "$info" | grep "Disk Size" | awk -F: '{print $2}' | xargs)
                         mount=$(echo "$info" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
+                        # Get disk name/model from parent disk
+                        parent_disk="/dev/disk${disk_num}"
+                        disk_name=$(diskutil info "$parent_disk" 2>/dev/null | grep "Device / Media Name" | awk -F: '{print $2}' | xargs)
+                        if [ -z "$disk_name" ]; then
+                            disk_name=$(diskutil info "$parent_disk" 2>/dev/null | grep "Media Name" | awk -F: '{print $2}' | xargs)
+                        fi
+                        if [ -z "$disk_name" ]; then
+                            disk_name="Internal Disk"
+                        fi
                         if [ -z "$mount" ] || [ "$mount" = "Not applicable" ]; then
                             mount="Not mounted"
                         fi
-                        echo "$disk|$size|$mount"
+                        echo "$disk|$size|$mount|$disk_name"
                     fi
                 done
             done
@@ -309,10 +327,11 @@ class EFIService: ObservableObject {
         
         for line in lines {
             let components = line.components(separatedBy: "|")
-            if components.count >= 3 {
+            if components.count >= 4 {
                 let devicePath = components[0].trimmingCharacters(in: .whitespaces)
                 let size = components[1].trimmingCharacters(in: .whitespaces)
                 let mountPoint = components[2].trimmingCharacters(in: .whitespaces)
+                let diskName = components[3].trimmingCharacters(in: .whitespaces)
                 
                 let finalMountPoint = mountPoint.isEmpty || mountPoint == "Not applicable" ? "Not mounted" : mountPoint
                 
@@ -320,6 +339,7 @@ class EFIService: ObservableObject {
                     deviceName: devicePath,
                     devicePath: devicePath,
                     size: size.isEmpty ? "Unknown" : size,
+                    diskName: diskName.isEmpty ? "Unknown Disk" : diskName,
                     mountPoint: finalMountPoint
                 )
                 newPartitions.append(partition)
@@ -332,6 +352,7 @@ class EFIService: ObservableObject {
                 deviceName: "/dev/disk0s1",
                 devicePath: "/dev/disk0s1",
                 size: "200.0 MB (209,715,200 bytes)",
+                diskName: "APPLE SSD AP0256M",
                 mountPoint: "Not mounted"
             ))
             
@@ -339,6 +360,7 @@ class EFIService: ObservableObject {
                 deviceName: "/dev/disk1s1",
                 devicePath: "/dev/disk1s1",
                 size: "300.0 MB (314,572,800 bytes)",
+                diskName: "Samsung SSD 980 PRO",
                 mountPoint: "Not mounted"
             ))
             

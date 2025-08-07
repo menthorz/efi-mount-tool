@@ -34,10 +34,10 @@ struct PartitionDetailView: View {
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 16) {
-                InfoCard(title: "Dispositivo", value: partition.devicePath, icon: "externaldrive")
-                InfoCard(title: "Tamanho", value: partition.size, icon: "scale.3d")
-                InfoCard(title: "Status", value: partition.isMounted ? "Montada" : "Não montada", icon: "checkmark.circle")
-                InfoCard(title: "Localização", value: partition.mountPoint, icon: "folder")
+                InfoCard(title: "Device", value: partition.devicePath, icon: "externaldrive")
+                InfoCard(title: "Disk Name", value: partition.diskName, icon: "internaldrive")
+                InfoCard(title: "Status", value: partition.isMounted ? "Mounted" : "Not mounted", icon: "checkmark.circle")
+                InfoCard(title: "Location", value: partition.mountPoint, icon: "folder")
             }
             
             Divider()
@@ -207,6 +207,7 @@ struct ActionButton: View {
             deviceName: "/dev/disk0s1",
             devicePath: "/dev/disk0s1",
             size: "200.0 MB",
+            diskName: "APPLE SSD AP0256M",
             mountPoint: "/Volumes/EFI"
         ),
         service: EFIService()

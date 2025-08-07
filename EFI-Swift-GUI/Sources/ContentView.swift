@@ -219,7 +219,7 @@ struct PartitionRowView: View {
                     .font(.body)
                     .fontWeight(.medium)
                 
-                Text(partition.size)
+                Text(partition.diskName)
                     .font(.caption)
                     .foregroundColor(.secondary)
                 

@@ -65,7 +65,7 @@ class MenuBarManager: NSObject, ObservableObject {
         // Header com título
         let titleItem = NSMenuItem()
         titleItem.attributedTitle = NSAttributedString(
-            string: "EFI Mount Tool",
+            string: "EFI Mount Tool v\(AppConstants.version)",
             attributes: [
                 .font: NSFont.menuBarFont(ofSize: 13).withTraits(.bold),
                 .foregroundColor: NSColor.labelColor
@@ -238,7 +238,7 @@ class MenuBarManager: NSObject, ObservableObject {
         submenu.addItem(statusItem)
         
         // Partition size
-        let sizeItem = NSMenuItem(title: "Size: \(partition.size)", action: nil, keyEquivalent: "")
+        let sizeItem = NSMenuItem(title: "Disk: \(partition.diskName)", action: nil, keyEquivalent: "")
         sizeItem.isEnabled = false
         submenu.addItem(sizeItem)
         

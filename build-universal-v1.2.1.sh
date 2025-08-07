@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# EFI Mount Tool v1.2.0 Universal Binary Build Script
+# EFI Mount Tool v1.2.1 Universal Binary Build Script
 # Professional release without emojis and with English interface
 
 set -e
@@ -14,7 +14,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Version and app info
-VERSION="1.2.0"
+VERSION="1.2.1"
 APP_NAME="EFI Mount Tool"
 BUNDLE_ID="com.menthorz.efi-mount-tool"
 BUILD_DIR="build"
