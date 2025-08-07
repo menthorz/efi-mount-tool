@@ -1,14 +1,21 @@
-# 🎉 EFI Mount Tool v1.1.2 - Interface Melhorada
+# 🎉 EFI Mount Tool v1.1.3 - Desmontagem Simplificada
 
-![Release](https://img.shields.io/badge/🚀_RELEASE-v1.1.2-FF6B6B?style=for-the-badge)
+![Release](https://img.shields.io/badge/🚀_RELEASE-v1.1.3-FF6B6B?style=for-the-badge)
 ![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange?style=for-the-badge&logo=swift)
 ![macOS](https://img.shields.io/badge/macOS-13.0%2B-blue?style=for-the-badge&logo=apple)
+![Universal](https://img.shields.io/badge/Universal_Binary-Intel_%2B_ARM64-purple?style=for-the-badge)
 
-**Release com melhorias de usabilidade para múltiplas partições EFI**
+**Release com melhorias de usabilidade: desmontagem sem solicitação de senha**
 
 ---
 
-## ✨ **Novidades v1.1.2**
+## ✨ **Novidades v1.1.3**
+
+### 🔓 **Desmontagem Simplificada**
+- ✅ **Sem solicitação de senha** para desmontar partições EFI
+- ✅ **Múltiplas tentativas** automáticas de desmontagem
+- ✅ **Desmontagem inteligente** com fallbacks
+- ✅ **Experiência mais fluida** para o usuário
 
 ### 📜 **Sistema de Scroll Inteligente**
 - ✅ **ScrollView** na lista de partições EFI
@@ -16,15 +23,9 @@
 - ✅ **Interface adaptativa** que cresce conforme necessário
 - ✅ **Performance otimizada** com LazyVStack
 
-### 🎯 **Melhorias de Usabilidade**
-- 🖱️ **Scroll responsivo** para usuários com muitos discos
-- 📱 **Altura máxima** limitada para manter proporções
-- ⚡ **Carregamento sob demanda** de partições
-- 🎨 **Design consistente** com padrões macOS
-
 ### 🏗️ **Binário Universal**
-- ✅ **Intel x86_64**: 780KB - Execução nativa em Macs Intel
-- ✅ **Apple Silicon ARM64**: 790KB - Execução nativa em M1/M2/M3
+- ✅ **Intel x86_64**: ~780KB - Execução nativa em Macs Intel
+- ✅ **Apple Silicon ARM64**: ~790KB - Execução nativa em M1/M2/M3
 - ✅ **Universal Binary**: 1.6MB - Ambas arquiteturas em um só arquivo
 - ⚡ **Performance otimizada** sem necessidade de Rosetta
 
@@ -32,13 +33,20 @@
 
 ## 🔧 **Detalhes Técnicos**
 
+### 🔓 **Sistema de Desmontagem Inteligente**
+| Tentativa | Método | Privilégios | Descrição |
+|-----------|--------|-------------|-----------|
+| **1ª** | `diskutil unmount` | Usuário | Desmontagem simples |
+| **2ª** | `diskutil unmount force` | Usuário | Desmontagem forçada |
+| **3ª** | `diskutil eject` | Usuário | Ejeção do dispositivo |
+
 ### 📊 **Interface**
 | Componente | Antes | Agora |
 |------------|-------|-------|
+| **Desmontagem** | Sempre pede senha | Tentativas automáticas sem senha |
 | **Lista de Partições** | ForEach estático | ScrollView + LazyVStack |
 | **Altura Máxima** | Ilimitada | 300px com scroll |
-| **Performance** | Carrega tudo | Carregamento lazy |
-| **Usabilidade** | Limitada | Scroll infinito |
+| **Usabilidade** | Limitada | Experiência fluida |
 
 ### ⚙️ **Especificações**
 - **Linguagem**: Swift 5.9+
@@ -52,18 +60,22 @@
 ## 🚀 **Instalação**
 
 ### 📥 **Download Direto**
-1. Baixe `EFI-Mount-Tool-Universal-v1.1.2.zip` (531KB)
+1. Baixe `EFI-Mount-Tool-Universal-v1.1.3.zip` (531KB)
 2. Extraia o arquivo
 3. Mova para `/Applications`
 4. Execute o app
 
 > 💡 **Binário Universal**: Execução nativa em Intel Macs e Apple Silicon
+> 
+> 🔓 **Nova experiência**: Desmontagem sem solicitação de senha
 
 ### 🔨 **Compilação**
 ```bash
 git clone https://github.com/menthorz/efi-mount-tool.git
 cd efi-mount-tool/EFI-Swift-GUI
-swift build
+swift build --configuration release --arch arm64
+swift build --configuration release --arch x86_64
+# Use o script build-universal-v1.1.3.sh para build completo
 ```
 
 ---
@@ -72,38 +84,37 @@ swift build
 
 ### 🏗️ **Gestão de Partições EFI**
 - 🔍 **Descoberta automática** de partições EFI
-- 🔧 **Montagem/desmontagem** segura
+- 🔧 **Montagem segura** (com privilégios quando necessário)
+- 🔓 **Desmontagem simplificada** (sem solicitação de senha)
 - 📂 **Abertura no Finder** com um clique
 - 📊 **Status visual** em tempo real
 
 ### 🎨 **Interface Nativa**
-- 🖱️ **Drag & Drop** intuitivo
+- 🖱️ **Scroll responsivo** para múltiplas partições
 - 📱 **Design responsivo** do macOS
 - 🌈 **Feedback visual** durante operações
 - ♿ **Acessibilidade completa**
 
 ---
 
-## 🔄 **Changelog v1.1.2**
+## 🔄 **Changelog v1.1.3**
 
 ### ✨ **Adicionado**
-- ScrollView na lista de partições EFI
-- LazyVStack para performance otimizada
-- Altura máxima configurável (300px)
-- Suporte para navegação com muitas partições
-- **Binário Universal** (Intel x86_64 + Apple Silicon ARM64)
-- Script de build automatizado para múltiplas arquiteturas
+- Sistema de desmontagem sem solicitação de senha
+- Múltiplas tentativas automáticas de desmontagem
+- Fallbacks inteligentes para desmontagem (force, eject)
+- Melhor detecção de status de montagem
 
 ### 🔧 **Melhorado**
-- Interface mais responsiva
-- Melhor experiência com múltiplos discos
-- Performance de carregamento
-- Consistência visual
+- Experiência do usuário mais fluida
+- Redução de interrupções por diálogos de senha
+- Performance na desmontagem de partições
+- Mensagens de status mais claras
 
 ### 🐛 **Corrigido**
-- Interface não responsiva com muitas partições
-- Layout quebrado em listas longas
-- Performance degradada com muitos itens
+- Solicitação desnecessária de senha para desmontagem
+- Falhas em desmontagem de partições não complexas
+- Experiência interrompida por múltiplos diálogos
 
 ---
 
@@ -115,7 +126,7 @@ swift build
 | **Processador** | Intel x86_64 OU Apple Silicon ARM64 |
 | **Memória** | 256MB disponível |
 | **Espaço** | 10MB livres |
-| **Permissões** | Administrador (para montagem) |
+| **Permissões** | Administrador (apenas para montagem) |
 
 ---
 
@@ -126,12 +137,27 @@ swift build
 - [ ] Atalhos de teclado
 - [ ] Logs detalhados de operações
 - [ ] Configurações personalizáveis
+- [ ] Notificações do sistema
 
 ### v2.0.0 (Visão)
 - [ ] Suporte a outros tipos de partição
 - [ ] Interface dark mode
 - [ ] Sincronização em nuvem
 - [ ] Plugin system
+- [ ] Automação com AppleScript
+
+---
+
+## 🎯 **Comparação de Versões**
+
+| Feature | v1.1.2 | v1.1.3 |
+|---------|--------|--------|
+| **Scroll na Lista** | ✅ | ✅ |
+| **Binário Universal** | ✅ | ✅ |
+| **Montagem** | Pede senha | Pede senha |
+| **Desmontagem** | Pede senha | **Sem senha** |
+| **Tentativas Múltiplas** | ❌ | ✅ |
+| **Experiência UX** | Boa | **Excelente** |
 
 ---
 
@@ -139,7 +165,7 @@ swift build
 
 **Desenvolvido por**: [Raphael (@menthorz)](https://github.com/menthorz)
 
-**Tecnologias**: Swift, SwiftUI, Foundation
+**Tecnologias**: Swift, SwiftUI, Foundation, diskutil
 
 ---
 
@@ -153,4 +179,4 @@ swift build
 
 ⭐ **Se este projeto foi útil, considere dar uma star!**
 
-*Desenvolvido com ❤️ e Swift - v1.1.2 - Agosto 2025*
+*Desenvolvido com ❤️ e Swift - v1.1.3 - Agosto 2025*

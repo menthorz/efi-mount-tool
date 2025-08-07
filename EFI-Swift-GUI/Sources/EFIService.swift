@@ -90,19 +90,11 @@ class EFIService: ObservableObject {
         let partition = partitions[index]
         lastMessage = "Desmontando partição \(partition.deviceName)..."
         
-        // Pedir privilégios de administrador
-        let authorized = await requestAdminPrivileges()
-        guard authorized else {
-            lastMessage = "Privilégios de administrador necessários"
-            isLoading = false
-            return false
-        }
-        
         let result = await executeScript(operation: .unmount(partition.devicePath))
         
         switch result {
         case .success(let output):
-            if output.contains("unmounted") || output.contains("desmontada") || output.contains("ejected") {
+            if output.contains("unmounted") || output.contains("desmontada") || output.contains("ejected") || output.contains("successfully") {
                 partitions[index].mountPoint = "Não montada"
                 lastMessage = "Partição desmontada com sucesso!"
                 isLoading = false
@@ -245,28 +237,58 @@ class EFIService: ObservableObject {
             fi
             """
         case .unmount(let devicePath):
-            // Desmontar usando diskutil com sudo
+            // Desmontar tentando primeiro sem sudo, depois com sudo se necessário
             return """
             echo "Desmontando \(devicePath)..."
             
             # Verificar se o dispositivo está montado
-            mount_info=$(diskutil info "\(devicePath)" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
+            mount_info=$(diskutil info "\(devicePath)" 2>/dev/null | grep "Mount Point" | awk -F: '{print $2}' | xargs)
             if [ -z "$mount_info" ] || [ "$mount_info" = "Not applicable" ]; then
-                echo "Dispositivo \(devicePath) não está montado"
+                echo "Dispositivo \(devicePath) não está montado ou já foi desmontado"
+                echo "successfully unmounted"
                 exit 0
             fi
             
-            # Tentar desmontar com privilégios de administrador
-            result=$(osascript -e 'do shell script "diskutil unmount \(devicePath)" with administrator privileges' 2>&1)
+            echo "Tentando desmontagem sem privilégios administrativos..."
+            
+            # Primeira tentativa: desmontagem simples sem sudo
+            result=$(diskutil unmount "\(devicePath)" 2>&1)
             exit_code=$?
             
             if [ $exit_code -eq 0 ]; then
                 echo "Partição EFI desmontada com sucesso!"
+                echo "successfully unmounted"
                 echo "$result"
-            else
-                echo "Erro na desmontagem: $result"
-                exit 1
+                exit 0
             fi
+            
+            echo "Desmontagem simples falhou, tentando desmontagem forçada..."
+            
+            # Segunda tentativa: desmontagem forçada
+            result=$(diskutil unmount force "\(devicePath)" 2>&1)
+            exit_code=$?
+            
+            if [ $exit_code -eq 0 ]; then
+                echo "Partição EFI desmontada com sucesso (forçada)!"
+                echo "successfully unmounted"
+                echo "$result"
+                exit 0
+            fi
+            
+            # Se ainda falhar, tentar eject
+            echo "Tentando ejetar dispositivo..."
+            result=$(diskutil eject "\(devicePath)" 2>&1)
+            exit_code=$?
+            
+            if [ $exit_code -eq 0 ]; then
+                echo "Dispositivo ejetado com sucesso!"
+                echo "successfully ejected"
+                echo "$result"
+                exit 0
+            fi
+            
+            echo "Todas as tentativas de desmontagem falharam: $result"
+            exit 1
             """
         case .systemInfo:
             return """

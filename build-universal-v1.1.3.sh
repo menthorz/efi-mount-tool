@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# EFI Mount Tool - Build Universal v1.1.2
+# EFI Mount Tool - Build Universal v1.1.3
 # Compila para Intel (x86_64) e Apple Silicon (ARM64)
 
 set -e
 
-echo "🚀 Iniciando build universal do EFI Mount Tool v1.1.2..."
+echo "🚀 Iniciando build universal do EFI Mount Tool v1.1.3..."
 
 # Navegar para o diretório do projeto Swift
 cd "EFI-Swift-GUI"
@@ -85,9 +85,9 @@ cat > "${CONTENTS_DIR}/Info.plist" << EOF
     <key>CFBundleName</key>
     <string>${APP_NAME}</string>
     <key>CFBundleVersion</key>
-    <string>1.1.2</string>
+    <string>1.1.3</string>
     <key>CFBundleShortVersionString</key>
-    <string>1.1.2</string>
+    <string>1.1.3</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleSignature</key>
@@ -144,7 +144,7 @@ fi
 echo ""
 echo "📦 Criando arquivo ZIP para release universal..."
 cd ..
-ZIP_NAME="EFI-Mount-Tool-Universal-v1.1.2.zip"
+ZIP_NAME="EFI-Mount-Tool-Universal-v1.1.3.zip"
 rm -f "${ZIP_NAME}"
 
 cd "EFI-Swift-GUI"
@@ -168,6 +168,11 @@ echo "🔄 Compatibilidade:"
 echo "   ✅ Apple Silicon (ARM64) - Execução nativa"
 echo "   ✅ Intel Mac (x86_64) - Execução nativa"
 echo "   ✅ macOS 13.0 (Ventura) ou superior"
+echo ""
+echo "✨ Melhorias v1.1.3:"
+echo "   🔓 Desmontagem sem solicitação de senha"
+echo "   ⚡ Múltiplas tentativas de desmontagem"
+echo "   🎯 Melhor experiência do usuário"
 echo ""
 echo "🔄 Próximos passos:"
 echo "   1. Testar em ambas arquiteturas: open 'EFI-Swift-GUI/${APP_BUNDLE}'"
