@@ -94,15 +94,21 @@ struct ContentView: View {
                     .foregroundColor(.secondary)
                     .italic()
             } else {
-                ForEach(efiService.partitions) { partition in
-                    PartitionRowView(
-                        partition: partition,
-                        isSelected: selectedPartition?.id == partition.id
-                    )
-                    .onTapGesture {
-                        selectedPartition = partition
+                ScrollView {
+                    LazyVStack(spacing: 4) {
+                        ForEach(efiService.partitions) { partition in
+                            PartitionRowView(
+                                partition: partition,
+                                isSelected: selectedPartition?.id == partition.id
+                            )
+                            .onTapGesture {
+                                selectedPartition = partition
+                            }
+                        }
                     }
+                    .padding(.vertical, 4)
                 }
+                .frame(maxHeight: 300) // Limita altura máxima para forçar scroll quando necessário
             }
         }
     }
