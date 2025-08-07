@@ -22,6 +22,12 @@
 - ⚡ **Carregamento sob demanda** de partições
 - 🎨 **Design consistente** com padrões macOS
 
+### 🏗️ **Binário Universal**
+- ✅ **Intel x86_64**: 780KB - Execução nativa em Macs Intel
+- ✅ **Apple Silicon ARM64**: 790KB - Execução nativa em M1/M2/M3
+- ✅ **Universal Binary**: 1.6MB - Ambas arquiteturas em um só arquivo
+- ⚡ **Performance otimizada** sem necessidade de Rosetta
+
 ---
 
 ## 🔧 **Detalhes Técnicos**
@@ -38,17 +44,20 @@
 - **Linguagem**: Swift 5.9+
 - **Framework**: SwiftUI
 - **Sistema**: macOS 13.0 (Ventura)+
-- **Arquitetura**: Universal (Intel + Apple Silicon)
+- **Arquitetura**: **Universal Binary** (Intel x86_64 + Apple Silicon ARM64)
+- **Execução**: Nativa em ambas arquiteturas (sem Rosetta)
 
 ---
 
 ## 🚀 **Instalação**
 
 ### 📥 **Download Direto**
-1. Baixe `EFI-Mount-Tool-v1.1.2.zip`
+1. Baixe `EFI-Mount-Tool-Universal-v1.1.2.zip` (531KB)
 2. Extraia o arquivo
 3. Mova para `/Applications`
 4. Execute o app
+
+> 💡 **Binário Universal**: Execução nativa em Intel Macs e Apple Silicon
 
 ### 🔨 **Compilação**
 ```bash
@@ -82,6 +91,8 @@ swift build
 - LazyVStack para performance otimizada
 - Altura máxima configurável (300px)
 - Suporte para navegação com muitas partições
+- **Binário Universal** (Intel x86_64 + Apple Silicon ARM64)
+- Script de build automatizado para múltiplas arquiteturas
 
 ### 🔧 **Melhorado**
 - Interface mais responsiva
