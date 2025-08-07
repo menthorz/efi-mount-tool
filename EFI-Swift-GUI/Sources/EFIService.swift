@@ -21,37 +21,37 @@ class EFIService: ObservableObject {
         }
     }
     
-    // MARK: - Descobrir Partições EFI
+    // MARK: - Discover EFI Partitions
     func discoverPartitions() async {
         isLoading = true
-        lastMessage = "Descobrindo partições EFI..."
+        lastMessage = "Discovering EFI partitions..."
         
         do {
             let result = await executeScript(operation: .discover)
             switch result {
             case .success(let output):
                 parsePartitions(from: output)
-                lastMessage = "Partições descobertas com sucesso!"
+                lastMessage = "Partitions discovered successfully"
             case .failure(let error):
-                lastMessage = "Erro ao descobrir partições: \(error)"
+                lastMessage = "Error discovering partitions: \(error)"
             }
         }
         
         isLoading = false
     }
     
-    // MARK: - Montar Partição
+    // MARK: - Mount Partition
     func mountPartition(at index: Int) async -> Bool {
         guard index >= 0 && index < partitions.count else { return false }
         
         isLoading = true
         let partition = partitions[index]
-        lastMessage = "Montando partição \(partition.deviceName)..."
+        lastMessage = "Mounting partition \(partition.deviceName)..."
         
-        // Pedir privilégios de administrador
+        // Request administrator privileges
         let authorized = await requestAdminPrivileges()
         guard authorized else {
-            lastMessage = "Privilégios de administrador necessários"
+            lastMessage = "Administrator privileges required"
             isLoading = false
             return false
         }
@@ -67,60 +67,60 @@ class EFIService: ObservableObject {
                 } else {
                     partitions[index].mountPoint = "/Volumes/EFI"
                 }
-                lastMessage = "Partição montada com sucesso!"
+                lastMessage = "Partition mounted successfully"
                 isLoading = false
                 return true
             } else {
-                lastMessage = "Erro na montagem: \(output)"
+                lastMessage = "Mount error: \(output)"
                 isLoading = false
                 return false
             }
         case .failure(let error):
-            lastMessage = "Erro ao montar: \(error)"
+            lastMessage = "Mount error: \(error)"
             isLoading = false
             return false
         }
     }
     
-    // MARK: - Desmontar Partição
+    // MARK: - Unmount Partition
     func unmountPartition(at index: Int) async -> Bool {
         guard index >= 0 && index < partitions.count else { return false }
         
         isLoading = true
         let partition = partitions[index]
-        lastMessage = "Desmontando partição \(partition.deviceName)..."
+        lastMessage = "Unmounting partition \(partition.deviceName)..."
         
         let result = await executeScript(operation: .unmount(partition.devicePath))
         
         switch result {
         case .success(let output):
             if output.contains("unmounted") || output.contains("desmontada") || output.contains("ejected") || output.contains("successfully") {
-                partitions[index].mountPoint = "Não montada"
-                lastMessage = "Partição desmontada com sucesso!"
+                partitions[index].mountPoint = "Not mounted"
+                lastMessage = "Partition unmounted successfully"
                 isLoading = false
                 return true
             } else {
-                lastMessage = "Erro na desmontagem: \(output)"
+                lastMessage = "Unmount error: \(output)"
                 isLoading = false
                 return false
             }
         case .failure(let error):
-            lastMessage = "Erro ao desmontar: \(error)"
+            lastMessage = "Unmount error: \(error)"
             isLoading = false
             return false
         }
     }
     
-    // MARK: - Solicitar Privilégios de Administrador
+    // MARK: - Request Administrator Privileges
     private func requestAdminPrivileges() async -> Bool {
         return await withCheckedContinuation { continuation in
             DispatchQueue.main.async {
                 let alert = NSAlert()
-                alert.messageText = "Privilégios de Administrador Necessários"
-                alert.informativeText = "Este app precisa de privilégios de administrador para montar/desmontar partições EFI. Sua senha será solicitada."
+                alert.messageText = "Administrator Privileges Required"
+                alert.informativeText = "This app requires administrator privileges to mount/unmount EFI partitions. Your password will be requested."
                 alert.alertStyle = .warning
-                alert.addButton(withTitle: "Autorizar")
-                alert.addButton(withTitle: "Cancelar")
+                alert.addButton(withTitle: "Authorize")
+                alert.addButton(withTitle: "Cancel")
                 
                 let response = alert.runModal()
                 continuation.resume(returning: response == .alertFirstButtonReturn)
@@ -128,7 +128,7 @@ class EFIService: ObservableObject {
         }
     }
     
-    // MARK: - Abrir EFI no Finder
+    // MARK: - Open EFI in Finder
     func openEFIInFinder(partition: EFIPartition) {
         guard partition.isMounted else { return }
         
@@ -136,7 +136,7 @@ class EFIService: ObservableObject {
         NSWorkspace.shared.open(url)
     }
     
-    // MARK: - Executar Script
+    // MARK: - Execute Script
     private func executeScript(operation: EFIOperation) async -> EFIOperationResult {
         return await withCheckedContinuation { continuation in
             let process = Process()
@@ -146,7 +146,7 @@ class EFIService: ObservableObject {
             process.standardError = pipe
             process.executableURL = URL(fileURLWithPath: "/bin/bash")
             
-            // Preparar comando baseado na operação
+            // Prepare command based on operation
             let command = buildCommand(for: operation)
             process.arguments = ["-c", command]
             
@@ -160,7 +160,7 @@ class EFIService: ObservableObject {
                 if process.terminationStatus == 0 {
                     continuation.resume(returning: .success(output))
                 } else {
-                    continuation.resume(returning: .failure("Processo terminou com código \(process.terminationStatus)"))
+                    continuation.resume(returning: .failure("Process terminated with code \(process.terminationStatus)"))
                 }
             } catch {
                 continuation.resume(returning: .failure(error.localizedDescription))
@@ -168,29 +168,29 @@ class EFIService: ObservableObject {
         }
     }
     
-    // MARK: - Construir Comando
+    // MARK: - Build Command
     private func buildCommand(for operation: EFIOperation) -> String {
         switch operation {
         case .discover:
-            // Buscar partições EFI de forma mais abrangente
+            // Search for EFI partitions more comprehensively
             return """
-            # Buscar partições EFI no sistema
-            echo "Buscando partições EFI..."
+            # Search for EFI partitions in the system
+            echo "Searching for EFI partitions..."
             
-            # Buscar drives externos que podem ter EFI
+            # Search external drives that may have EFI
             for disk in $(diskutil list external | grep '^/dev/disk' | awk '{print $1}'); do
                 info=$(diskutil info "$disk" 2>/dev/null)
                 if echo "$info" | grep -qi "EFI\\|GUID_partition_scheme"; then
                     size=$(echo "$info" | grep "Disk Size" | awk -F: '{print $2}' | xargs)
                     mount=$(echo "$info" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
                     if [ -z "$mount" ] || [ "$mount" = "Not applicable" ]; then
-                        mount="Não montada"
+                        mount="Not mounted"
                     fi
                     echo "$disk|$size|$mount"
                 fi
             done
             
-            # Verificar partições internas também
+            # Check internal partitions as well
             for disk_num in $(seq 0 9); do
                 for part_num in $(seq 1 9); do
                     disk="/dev/disk${disk_num}s${part_num}"
@@ -199,7 +199,7 @@ class EFIService: ObservableObject {
                         size=$(echo "$info" | grep "Disk Size" | awk -F: '{print $2}' | xargs)
                         mount=$(echo "$info" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
                         if [ -z "$mount" ] || [ "$mount" = "Not applicable" ]; then
-                            mount="Não montada"
+                            mount="Not mounted"
                         fi
                         echo "$disk|$size|$mount"
                     fi
@@ -207,102 +207,102 @@ class EFIService: ObservableObject {
             done
             """
         case .mount(let devicePath):
-            // Montar usando diskutil com sudo e osascript para pedir senha
+            // Mount using diskutil with sudo and osascript to request password
             return """
-            echo "Montando \(devicePath)..."
+            echo "Mounting \(devicePath)..."
             
-            # Verificar se o dispositivo existe
+            # Check if device exists
             if ! diskutil info "\(devicePath)" >/dev/null 2>&1; then
-                echo "Erro: Dispositivo \(devicePath) não encontrado"
+                echo "Error: Device \(devicePath) not found"
                 exit 1
             fi
             
-            # Tentar montar com privilégios de administrador
+            # Try to mount with administrator privileges
             result=$(osascript -e 'do shell script "diskutil mount \(devicePath)" with administrator privileges' 2>&1)
             exit_code=$?
             
             if [ $exit_code -eq 0 ]; then
-                echo "Partição EFI montada com sucesso!"
+                echo "EFI partition mounted successfully!"
                 echo "$result"
-                # Verificar onde foi montada
+                # Check where it was mounted
                 mount_info=$(diskutil info "\(devicePath)" | grep "Mount Point" | awk -F: '{print $2}' | xargs)
                 if [ ! -z "$mount_info" ] && [ "$mount_info" != "Not applicable" ]; then
-                    echo "Localização: $mount_info"
+                    echo "Location: $mount_info"
                 else
-                    echo "Localização: /Volumes/EFI"
+                    echo "Location: /Volumes/EFI"
                 fi
             else
-                echo "Erro na montagem: $result"
+                echo "Mount error: $result"
                 exit 1
             fi
             """
         case .unmount(let devicePath):
-            // Desmontar tentando primeiro sem sudo, depois com sudo se necessário
+            // Unmount trying first without sudo, then with sudo if necessary
             return """
-            echo "Desmontando \(devicePath)..."
+            echo "Unmounting \(devicePath)..."
             
-            # Verificar se o dispositivo está montado
+            # Check if device is mounted
             mount_info=$(diskutil info "\(devicePath)" 2>/dev/null | grep "Mount Point" | awk -F: '{print $2}' | xargs)
             if [ -z "$mount_info" ] || [ "$mount_info" = "Not applicable" ]; then
-                echo "Dispositivo \(devicePath) não está montado ou já foi desmontado"
+                echo "Device \(devicePath) is not mounted or already unmounted"
                 echo "successfully unmounted"
                 exit 0
             fi
             
-            echo "Tentando desmontagem sem privilégios administrativos..."
+            echo "Attempting unmount without administrative privileges..."
             
-            # Primeira tentativa: desmontagem simples sem sudo
+            # First attempt: simple unmount without sudo
             result=$(diskutil unmount "\(devicePath)" 2>&1)
             exit_code=$?
             
             if [ $exit_code -eq 0 ]; then
-                echo "Partição EFI desmontada com sucesso!"
+                echo "EFI partition unmounted successfully!"
                 echo "successfully unmounted"
                 echo "$result"
                 exit 0
             fi
             
-            echo "Desmontagem simples falhou, tentando desmontagem forçada..."
+            echo "Simple unmount failed, trying forced unmount..."
             
-            # Segunda tentativa: desmontagem forçada
+            # Second attempt: forced unmount
             result=$(diskutil unmount force "\(devicePath)" 2>&1)
             exit_code=$?
             
             if [ $exit_code -eq 0 ]; then
-                echo "Partição EFI desmontada com sucesso (forçada)!"
+                echo "EFI partition unmounted successfully (forced)!"
                 echo "successfully unmounted"
                 echo "$result"
                 exit 0
             fi
             
-            # Se ainda falhar, tentar eject
-            echo "Tentando ejetar dispositivo..."
+            # If still fails, try eject
+            echo "Trying to eject device..."
             result=$(diskutil eject "\(devicePath)" 2>&1)
             exit_code=$?
             
             if [ $exit_code -eq 0 ]; then
-                echo "Dispositivo ejetado com sucesso!"
+                echo "Device ejected successfully!"
                 echo "successfully ejected"
                 echo "$result"
                 exit 0
             fi
             
-            echo "Todas as tentativas de desmontagem falharam: $result"
+            echo "All unmount attempts failed: $result"
             exit 1
             """
         case .systemInfo:
             return """
-            echo "Sistema: $(sw_vers -productName) $(sw_vers -productVersion)"
+            echo "System: $(sw_vers -productName) $(sw_vers -productVersion)"
             echo "Build: $(sw_vers -buildVersion)"
             echo "Kernel: $(uname -r)"
-            echo "Arquitetura: $(uname -m)"
-            echo "Usuário: $(whoami)"
+            echo "Architecture: $(uname -m)"
+            echo "User: $(whoami)"
             diskutil list | head -20
             """
         }
     }
     
-    // MARK: - Parse das Partições
+    // MARK: - Parse Partitions
     private func parsePartitions(from output: String) {
         let lines = output.components(separatedBy: .newlines)
         var newPartitions: [EFIPartition] = []
@@ -314,7 +314,7 @@ class EFIService: ObservableObject {
                 let size = components[1].trimmingCharacters(in: .whitespaces)
                 let mountPoint = components[2].trimmingCharacters(in: .whitespaces)
                 
-                let finalMountPoint = mountPoint.isEmpty || mountPoint == "Not applicable" ? "Não montada" : mountPoint
+                let finalMountPoint = mountPoint.isEmpty || mountPoint == "Not applicable" ? "Not mounted" : mountPoint
                 
                 let partition = EFIPartition(
                     deviceName: devicePath,
@@ -326,34 +326,34 @@ class EFIService: ObservableObject {
             }
         }
         
-        // Se não encontrou partições reais, criar partições de exemplo para demonstração
+        // If no real partitions found, create example partitions for demonstration
         if newPartitions.isEmpty {
             newPartitions.append(EFIPartition(
                 deviceName: "/dev/disk0s1",
                 devicePath: "/dev/disk0s1",
                 size: "200.0 MB (209,715,200 bytes)",
-                mountPoint: "Não montada"
+                mountPoint: "Not mounted"
             ))
             
             newPartitions.append(EFIPartition(
                 deviceName: "/dev/disk1s1",
                 devicePath: "/dev/disk1s1",
                 size: "300.0 MB (314,572,800 bytes)",
-                mountPoint: "Não montada"
+                mountPoint: "Not mounted"
             ))
             
-            // Adicionar nota para o usuário
-            lastMessage = "Partições de exemplo criadas. Conecte um drive externo com partição EFI para usar recursos reais."
+            // Add note for user
+            lastMessage = "Example partitions created. Connect an external drive with EFI partition to use real features."
         } else {
-            lastMessage = "Encontradas \(newPartitions.count) partição(ões) EFI no sistema."
+            lastMessage = "Found \(newPartitions.count) EFI partition(s) in the system."
         }
         
         partitions = newPartitions
     }
     
-    // MARK: - Extrair Mount Point
+    // MARK: - Extract Mount Point
     private func extractMountPoint(from output: String) -> String? {
-        // Procurar por padrão "/Volumes/EFI" ou similar no output
+        // Look for "/Volumes/EFI" pattern or similar in output
         let lines = output.components(separatedBy: .newlines)
         for line in lines {
             if line.contains("/Volumes/") {
@@ -362,30 +362,30 @@ class EFIService: ObservableObject {
                 }
             }
         }
-        return "/Volumes/EFI" // Padrão
+        return "/Volumes/EFI" // Default
     }
     
-    // MARK: - Atualizar Informações do Sistema
+    // MARK: - Update System Information
     func updateSystemInfo() async {
         isLoading = true
-        lastMessage = "Atualizando informações do sistema..."
+        lastMessage = "Updating system information..."
         
         let result = await executeScript(operation: .systemInfo)
         var diskCount = 0
         
         switch result {
         case .success(let output):
-            // Parse do output para contar discos
+            // Parse output to count disks
             let lines = output.components(separatedBy: .newlines)
             for line in lines {
-                if line.contains("/dev/disk") && !line.contains("s") { // Conta apenas discos principais, não partições
+                if line.contains("/dev/disk") && !line.contains("s") { // Count only main disks, not partitions
                     diskCount += 1
                 }
             }
             
-            // Criar novo SystemInfo com informações atualizadas
+            // Create new SystemInfo with updated information
             let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/yyyy HH:mm:ss"
+            formatter.dateFormat = "MM/dd/yyyy HH:mm:ss"
             
             systemInfo = SystemInfo(
                 date: formatter.string(from: Date()),
@@ -399,9 +399,9 @@ class EFIService: ObservableObject {
                 memorySize: systemInfo.memorySize
             )
             
-            lastMessage = "Informações do sistema atualizadas - \(diskCount) disco(s) detectado(s)"
+            lastMessage = "System information updated - \(diskCount) disk(s) detected"
         case .failure(let error):
-            lastMessage = "Erro ao obter informações: \(error)"
+            lastMessage = "Error getting information: \(error)"
         }
         
         isLoading = false

@@ -37,9 +37,9 @@ class MenuBarManager: NSObject, ObservableObject {
         updateMenu()
     }
     
-    // MARK: - Observar EFI Service
+    // MARK: - Observe EFI Service
     private func observeEFIService() {
-        // Atualizar menu quando as partições mudarem
+        // Update menu when partitions change
         efiService.$partitions
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -47,7 +47,7 @@ class MenuBarManager: NSObject, ObservableObject {
             }
             .store(in: &cancellables)
         
-        // Atualizar menu quando o status de loading mudar
+        // Update menu when loading status changes
         efiService.$isLoading
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
@@ -56,7 +56,7 @@ class MenuBarManager: NSObject, ObservableObject {
             .store(in: &cancellables)
     }
     
-    // MARK: - Atualizar Menu
+    // MARK: - Update Menu
     private func updateMenu() {
         guard let statusItem = statusItem else { return }
         
@@ -102,11 +102,11 @@ class MenuBarManager: NSObject, ObservableObject {
             partitionsHeader.isEnabled = false
             menu.addItem(partitionsHeader)
             
-            // Lista de partições
+            // Partition list
             for (index, partition) in efiService.partitions.enumerated() {
                 let partitionMenu = createPartitionSubmenu(for: partition, at: index)
                 let partitionItem = NSMenuItem()
-                partitionItem.title = "💾 \(partition.deviceName)"
+                partitionItem.title = "\(partition.deviceName)"
                 partitionItem.submenu = partitionMenu
                 menu.addItem(partitionItem)
             }
@@ -114,9 +114,9 @@ class MenuBarManager: NSObject, ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         
-        // Ações principais
+        // Main actions
         let discoverItem = NSMenuItem(
-            title: "🔍 Descobrir Partições",
+            title: "Discover Partitions",
             action: #selector(discoverPartitions),
             keyEquivalent: "r"
         )
@@ -125,7 +125,7 @@ class MenuBarManager: NSObject, ObservableObject {
         menu.addItem(discoverItem)
         
         let refreshSystemItem = NSMenuItem(
-            title: "ℹ️ Atualizar Sistema",
+            title: "Update System",
             action: #selector(refreshSystemInfo),
             keyEquivalent: "i"
         )
@@ -135,27 +135,27 @@ class MenuBarManager: NSObject, ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         
-        // Janela principal
+        // Main window
         let showMainWindowItem = NSMenuItem(
-            title: "📱 Mostrar Janela Principal",
+            title: "Show Main Window",
             action: #selector(showMainWindow),
             keyEquivalent: "m"
         )
         showMainWindowItem.target = self
         menu.addItem(showMainWindowItem)
         
-        // Informações do sistema
+        // System information
         let systemInfoItem = NSMenuItem(
-            title: "💻 Informações do Sistema",
+            title: "System Information",
             action: #selector(showSystemInfo),
             keyEquivalent: "s"
         )
         systemInfoItem.target = self
         menu.addItem(systemInfoItem)
         
-        // Ajuda
+        // Help
         let helpItem = NSMenuItem(
-            title: "❓ Ajuda",
+            title: "Help",
             action: #selector(showHelp),
             keyEquivalent: "h"
         )
@@ -164,21 +164,21 @@ class MenuBarManager: NSObject, ObservableObject {
         
         menu.addItem(NSMenuItem.separator())
         
-        // Configurações
+        // Settings
         let settingsSubmenu = NSMenu()
         
         // Toggle Dock Icon
         let dockIconItem = NSMenuItem(
-            title: NSApp.activationPolicy() == .regular ? "🔇 Ocultar Ícone do Dock" : "🔊 Mostrar Ícone do Dock",
+            title: NSApp.activationPolicy() == .regular ? "Hide Dock Icon" : "Show Dock Icon",
             action: #selector(toggleDockIcon),
             keyEquivalent: "d"
         )
         dockIconItem.target = self
         settingsSubmenu.addItem(dockIconItem)
         
-        // Iniciar com o sistema
+        // Launch at startup
         let launchAtStartupItem = NSMenuItem(
-            title: "🚀 Iniciar com o Sistema",
+            title: "Launch at Startup",
             action: #selector(toggleLaunchAtStartup),
             keyEquivalent: ""
         )
@@ -187,17 +187,17 @@ class MenuBarManager: NSObject, ObservableObject {
         settingsSubmenu.addItem(launchAtStartupItem)
         
         let settingsItem = NSMenuItem()
-        settingsItem.title = "⚙️ Configurações"
+        settingsItem.title = "Settings"
         settingsItem.submenu = settingsSubmenu
         menu.addItem(settingsItem)
         
         menu.addItem(NSMenuItem.separator())
         
-        // Última mensagem do serviço
+        // Last service message
         if !efiService.lastMessage.isEmpty {
             let messageItem = NSMenuItem()
             messageItem.attributedTitle = NSAttributedString(
-                string: "📝 \(efiService.lastMessage)",
+                string: "Status: \(efiService.lastMessage)",
                 attributes: [
                     .font: NSFont.menuBarFont(ofSize: 11),
                     .foregroundColor: NSColor.tertiaryLabelColor
@@ -210,7 +210,7 @@ class MenuBarManager: NSObject, ObservableObject {
         
         // Quit
         let quitItem = NSMenuItem(
-            title: "⚙️ Sair do EFI Mount Tool",
+            title: "Quit EFI Mount Tool",
             action: #selector(quitApp),
             keyEquivalent: "q"
         )
@@ -220,13 +220,13 @@ class MenuBarManager: NSObject, ObservableObject {
         statusItem.menu = menu
     }
     
-    // MARK: - Criar submenu para partição
+    // MARK: - Create submenu for partition
     private func createPartitionSubmenu(for partition: EFIPartition, at index: Int) -> NSMenu {
         let submenu = NSMenu()
         
-        // Status da partição
+        // Partition status
         let statusItem = NSMenuItem()
-        let statusText = partition.isMounted ? "🟢 Montada: \(partition.mountPoint)" : "🔴 Não montada"
+        let statusText = partition.isMounted ? "Mounted: \(partition.mountPoint)" : "Not mounted"
         statusItem.attributedTitle = NSAttributedString(
             string: statusText,
             attributes: [
@@ -237,17 +237,17 @@ class MenuBarManager: NSObject, ObservableObject {
         statusItem.isEnabled = false
         submenu.addItem(statusItem)
         
-        // Tamanho da partição
-        let sizeItem = NSMenuItem(title: "📏 Tamanho: \(partition.size)", action: nil, keyEquivalent: "")
+        // Partition size
+        let sizeItem = NSMenuItem(title: "Size: \(partition.size)", action: nil, keyEquivalent: "")
         sizeItem.isEnabled = false
         submenu.addItem(sizeItem)
         
         submenu.addItem(NSMenuItem.separator())
         
         if partition.isMounted {
-            // Abrir no Finder
+            // Open in Finder
             let openFinderItem = NSMenuItem(
-                title: "📁 Abrir no Finder",
+                title: "Open in Finder",
                 action: #selector(openPartitionInFinder(_:)),
                 keyEquivalent: ""
             )
@@ -256,9 +256,9 @@ class MenuBarManager: NSObject, ObservableObject {
             openFinderItem.isEnabled = !efiService.isLoading
             submenu.addItem(openFinderItem)
             
-            // Desmontar
+            // Unmount
             let unmountItem = NSMenuItem(
-                title: "⏏️ Desmontar Partição",
+                title: "Unmount Partition",
                 action: #selector(unmountPartition(_:)),
                 keyEquivalent: ""
             )
@@ -267,9 +267,9 @@ class MenuBarManager: NSObject, ObservableObject {
             unmountItem.isEnabled = !efiService.isLoading
             submenu.addItem(unmountItem)
         } else {
-            // Montar
+            // Mount
             let mountItem = NSMenuItem(
-                title: "🔗 Montar Partição",
+                title: "Mount Partition",
                 action: #selector(mountPartition(_:)),
                 keyEquivalent: ""
             )
@@ -281,9 +281,9 @@ class MenuBarManager: NSObject, ObservableObject {
         
         submenu.addItem(NSMenuItem.separator())
         
-        // Copiar path
+        // Copy path
         let copyPathItem = NSMenuItem(
-            title: "📋 Copiar Caminho",
+            title: "Copy Path",
             action: #selector(copyPartitionPath(_:)),
             keyEquivalent: ""
         )
@@ -294,7 +294,7 @@ class MenuBarManager: NSObject, ObservableObject {
         return submenu
     }
     
-    // MARK: - Ações do Menu
+    // MARK: - Menu Actions
     
     @objc private func discoverPartitions() {
         Task {
@@ -332,12 +332,12 @@ class MenuBarManager: NSObject, ObservableObject {
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(path, forType: .string)
         
-        // Mostrar notificação
-        showNotification(title: "Caminho Copiado", message: "Caminho da partição copiado para a área de transferência")
+        // Show notification
+        showNotification(title: "Path Copied", message: "Partition path copied to clipboard")
     }
     
     @objc private func showMainWindow() {
-        // Ativar a aplicação e mostrar janela principal
+        // Activate application and show main window
         NSApp.activate(ignoringOtherApps: true)
         for window in NSApp.windows {
             if window.title.contains("EFI") || window.contentViewController != nil {

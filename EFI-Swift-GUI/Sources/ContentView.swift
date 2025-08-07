@@ -28,22 +28,22 @@ struct ContentView: View {
         }
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("Ajuda") {
+                Button("Help") {
                     showingHelp = true
                 }
-                .help("Mostrar ajuda sobre o EFI Mount Tool")
+                .help("Show help about EFI Mount Tool")
                 
-                Button("Sistema") {
+                Button("System") {
                     showingSystemInfo = true
                 }
-                .help("Informações do sistema")
+                .help("System information")
                 
-                Button("Atualizar") {
+                Button("Refresh") {
                     Task {
                         await efiService.discoverPartitions()
                     }
                 }
-                .help("Atualizar lista de partições")
+                .help("Refresh partition list")
                 .disabled(efiService.isLoading)
             }
         }
@@ -70,7 +70,7 @@ struct ContentView: View {
                     .fontWeight(.bold)
             }
             
-            Text("Interface Swift para gerenciar partições EFI")
+            Text("Swift interface for managing EFI partitions")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -80,7 +80,7 @@ struct ContentView: View {
     private var partitionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Partições EFI")
+                Text("EFI Partitions")
                     .font(.headline)
                 Spacer()
                 if efiService.isLoading {
@@ -90,7 +90,7 @@ struct ContentView: View {
             }
             
             if efiService.partitions.isEmpty && !efiService.isLoading {
-                Text("Nenhuma partição EFI encontrada")
+                Text("No EFI partitions found")
                     .foregroundColor(.secondary)
                     .italic()
             } else {
@@ -108,7 +108,7 @@ struct ContentView: View {
                     }
                     .padding(.vertical, 4)
                 }
-                .frame(maxHeight: 300) // Limita altura máxima para forçar scroll quando necessário
+                .frame(maxHeight: 300)
             }
         }
     }
@@ -116,10 +116,10 @@ struct ContentView: View {
     // MARK: - Actions Section
     private var actionsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Ações")
+            Text("Actions")
                 .font(.headline)
             
-            Button("Descobrir Partições") {
+            Button("Discover Partitions") {
                 Task {
                     await efiService.discoverPartitions()
                 }
@@ -129,7 +129,7 @@ struct ContentView: View {
             
             if let partition = selectedPartition {
                 if partition.isMounted {
-                    Button("Desmontar EFI") {
+                    Button("Unmount EFI") {
                         Task {
                             if let index = efiService.partitions.firstIndex(where: { $0.id == partition.id }) {
                                 _ = await efiService.unmountPartition(at: index)
@@ -140,12 +140,12 @@ struct ContentView: View {
                     .buttonStyle(.bordered)
                     .disabled(efiService.isLoading)
                     
-                    Button("Abrir no Finder") {
+                    Button("Open in Finder") {
                         efiService.openEFIInFinder(partition: partition)
                     }
                     .buttonStyle(.bordered)
                 } else {
-                    Button("Montar EFI") {
+                    Button("Mount EFI") {
                         Task {
                             if let index = efiService.partitions.firstIndex(where: { $0.id == partition.id }) {
                                 _ = await efiService.mountPartition(at: index)
@@ -189,16 +189,16 @@ struct ContentView: View {
                 .font(.largeTitle)
                 .fontWeight(.bold)
             
-            Text("Selecione uma partição EFI na lista à esquerda para começar")
+            Text("Select an EFI partition from the list on the left to begin")
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
             VStack(alignment: .leading, spacing: 8) {
-                Label("Descubra partições EFI automaticamente", systemImage: "magnifyingglass")
-                Label("Monte e desmonte com segurança", systemImage: "lock.shield")
-                Label("Acesse arquivos EFI diretamente", systemImage: "folder")
-                Label("Interface nativa do macOS", systemImage: "swift")
+                Label("Discover EFI partitions automatically", systemImage: "magnifyingglass")
+                Label("Mount and unmount safely", systemImage: "lock.shield")
+                Label("Access EFI files directly", systemImage: "folder")
+                Label("Native macOS interface", systemImage: "swift")
             }
             .font(.body)
             .foregroundColor(.secondary)
@@ -228,7 +228,7 @@ struct PartitionRowView: View {
                         .fill(partition.isMounted ? Color.green : Color.gray)
                         .frame(width: 8, height: 8)
                     
-                    Text(partition.isMounted ? "Montada" : "Não montada")
+                    Text(partition.isMounted ? "Mounted" : "Not mounted")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
